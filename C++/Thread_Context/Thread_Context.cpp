@@ -23,6 +23,8 @@ however shellcode still persists in memory of the process and can be picked up b
 
 Bizarre behaviour can also be encoutered which might break the parent process entirely so if injection happens in explorer.exe 
 for example, then the process might die which is bad.
+
+This method might render an application/program unusable for the user due to the hijacking of a main thread.
 */
 
 LPVOID(WINAPI* pVirtualAllocExNuma)(HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect, DWORD nndPreferred);
