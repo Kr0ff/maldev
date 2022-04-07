@@ -87,7 +87,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PowerShell", "PowerShell", 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "minidump", "C++\minidump\minidump.vcxproj", "{C8FDB2B8-8A25-4D24-B419-6608EAE8D34A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Thread_Injection", "Thread_Injection\Thread_Injection.vcxproj", "{5072C827-74DD-47D2-8881-B4DC736F2064}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Thread_Context", "C++\Thread_Context\Thread_Context.vcxproj", "{5072C827-74DD-47D2-8881-B4DC736F2064}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -405,8 +405,8 @@ Global
 		{FE4387B7-31CA-4BA5-B06A-1E3EA96DB3DF}.Debug|x86.ActiveCfg = Debug|Win32
 		{FE4387B7-31CA-4BA5-B06A-1E3EA96DB3DF}.Debug|x86.Build.0 = Debug|Win32
 		{FE4387B7-31CA-4BA5-B06A-1E3EA96DB3DF}.Release|Any CPU.ActiveCfg = Release|x64
-		{FE4387B7-31CA-4BA5-B06A-1E3EA96DB3DF}.Release|x64.ActiveCfg = Release|x64
-		{FE4387B7-31CA-4BA5-B06A-1E3EA96DB3DF}.Release|x64.Build.0 = Release|x64
+		{FE4387B7-31CA-4BA5-B06A-1E3EA96DB3DF}.Release|x64.ActiveCfg = Release|Win32
+		{FE4387B7-31CA-4BA5-B06A-1E3EA96DB3DF}.Release|x64.Build.0 = Release|Win32
 		{FE4387B7-31CA-4BA5-B06A-1E3EA96DB3DF}.Release|x86.ActiveCfg = Release|Win32
 		{FE4387B7-31CA-4BA5-B06A-1E3EA96DB3DF}.Release|x86.Build.0 = Release|Win32
 		{1F6CCF61-8177-4E19-B5E4-1B1BF5EEDD86}.Debug|Any CPU.ActiveCfg = Debug|Win32
@@ -425,8 +425,8 @@ Global
 		{D2582DB2-6111-47EC-A6C5-1DEF3F35E19A}.Debug|x86.ActiveCfg = Debug|Win32
 		{D2582DB2-6111-47EC-A6C5-1DEF3F35E19A}.Debug|x86.Build.0 = Debug|Win32
 		{D2582DB2-6111-47EC-A6C5-1DEF3F35E19A}.Release|Any CPU.ActiveCfg = Release|x64
-		{D2582DB2-6111-47EC-A6C5-1DEF3F35E19A}.Release|x64.ActiveCfg = Release|x64
-		{D2582DB2-6111-47EC-A6C5-1DEF3F35E19A}.Release|x64.Build.0 = Release|x64
+		{D2582DB2-6111-47EC-A6C5-1DEF3F35E19A}.Release|x64.ActiveCfg = Release|Win32
+		{D2582DB2-6111-47EC-A6C5-1DEF3F35E19A}.Release|x64.Build.0 = Release|Win32
 		{D2582DB2-6111-47EC-A6C5-1DEF3F35E19A}.Release|x86.ActiveCfg = Release|Win32
 		{D2582DB2-6111-47EC-A6C5-1DEF3F35E19A}.Release|x86.Build.0 = Release|Win32
 		{928E5184-E97B-4893-9D1D-AD889D1A8E03}.Debug|Any CPU.ActiveCfg = Debug|Win32
