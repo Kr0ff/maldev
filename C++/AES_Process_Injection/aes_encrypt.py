@@ -1,7 +1,9 @@
 # Red Team Operator course code template
 # payload encryption with AES
 # 
+# Python 2
 # author: reenz0h (twitter: @sektor7net)
+
 
 import sys
 from Crypto.Cipher import AES

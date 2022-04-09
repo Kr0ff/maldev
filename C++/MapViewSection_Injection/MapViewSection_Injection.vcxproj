@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{9e456a45-3315-40b6-8cb2-de676fc41367}</ProjectGuid>
-    <RootNamespace>GARunner</RootNamespace>
+    <ProjectGuid>{5981a0f7-d86d-4ef4-83c0-cd4493ececfe}</ProjectGuid>
+    <RootNamespace>MapViewSectionInjection</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -139,7 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="GA_Runner.cpp" />
+    <ClCompile Include="MapViewSection_Injection.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

