@@ -36,5 +36,5 @@ ciphertext = aesenc(plaintext, KEY)
 open("rcdata1.bin", "wb").write(ciphertext)
 print("Shellcode saved to rcdata1.bin")
 
-print('AESkey[] = { 0x' + ', 0x'.join(hex(ord(x))[2:] for x in KEY) + ' };')
-#print('payload[] = { 0x' + ', 0x'.join(hex(ord(x))[2:] for x in ciphertext) + ' };')
+print('unsigned char key[] = { 0x' + ', 0x'.join(hex(ord(x))[2:] for x in KEY) + ' };')
+print('unsigned char shellcode[] = { 0x' + ', 0x'.join(hex(ord(x))[2:] for x in ciphertext) + ' };')

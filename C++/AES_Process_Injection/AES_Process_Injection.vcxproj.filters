@@ -33,6 +33,5 @@
     <None Include="rcdata1.bin">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="aes_encrypt.py" />
   </ItemGroup>
 </Project>

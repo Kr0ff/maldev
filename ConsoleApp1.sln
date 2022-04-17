@@ -95,6 +95,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MapViewSection_Injection", 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EarlyBird", "C++\EarlyBird\EarlyBird.vcxproj", "{59FCEDE2-D849-4177-943F-76A36C7F0518}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Python", "Python", "{C78542EA-E4E3-4F53-845B-4752C421A1D0}"
+	ProjectSection(SolutionItems) = preProject
+		C++\aes_encrypt.py = C++\aes_encrypt.py
+		C++\bin2uuid.py = C++\bin2uuid.py
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
