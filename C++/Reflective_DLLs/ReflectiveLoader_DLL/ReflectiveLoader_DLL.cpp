@@ -1,5 +1,3 @@
-#include "pch.h" // required by VS but does nothing
-
 #include "ReflectiveLoader.h" // add reflective loader headers
 
 #include <windows.h>
@@ -160,7 +158,7 @@ void _exec(void) {
 
 }
 
-extern "C" HINSTANCE hAppInstance = 0;
+extern "C" HINSTANCE hAppInstance;
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD dwReason, LPVOID lpReserved)
 {
     BOOL bReturnValue = TRUE;
