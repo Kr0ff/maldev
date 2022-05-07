@@ -108,6 +108,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ReflectiveLoader", "C++\Ref
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ReflectiveLoader_DLL", "C++\Reflective_DLLs\ReflectiveLoader_DLL\ReflectiveLoader_DLL.vcxproj", "{5CADA47F-F11A-4118-8FD7-B8FB5A9379AB}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VisualBasic", "VisualBasic", "{3C5629CF-4FEB-44CF-90C3-CF2679C012C0}"
+	ProjectSection(SolutionItems) = preProject
+		VisualBasic\heapalloc-macro.vb = VisualBasic\heapalloc-macro.vb
+		VisualBasic\vba_macro_inmeminj_timer.vb = VisualBasic\vba_macro_inmeminj_timer.vb
+		VisualBasic\vba_shellcode_runner.vba = VisualBasic\vba_shellcode_runner.vba
+		VisualBasic\wmi-macro.txt = VisualBasic\wmi-macro.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
