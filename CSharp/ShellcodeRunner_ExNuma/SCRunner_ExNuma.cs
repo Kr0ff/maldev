@@ -141,13 +141,6 @@ namespace ShellcodeRunner_ExNuma
                 Console.WriteLine("[-] Couldn't create thread for shellcode");
                 throw e;
             }
-
-            /* Before the above changes...
-             *
-             * Marshal.Copy(buf, 0, addr, size);
-             * IntPtr hThread = CreateThread(IntPtr.Zero, 0, addr, IntPtr.Zero, 0, IntPtr.Zero);
-             * WaitForSingleObject(hThread, 0xFFFFFFFF);
-             */
         }
     }
 }
