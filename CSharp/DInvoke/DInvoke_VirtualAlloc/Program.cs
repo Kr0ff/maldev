@@ -61,11 +61,6 @@ namespace DInvoke_VirtualAlloc
 
             object[] waitObjectParams = { iMakeThread, 0xFFFFFFFF };
             uint iWaitForObject = (uint)Invoke.Generic.DynamicFunctionInvoke(pWaitForObject, typeof(dWaitForSingleObject), ref waitObjectParams);
-
-
-
-
-
         }
     }
 }
