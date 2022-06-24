@@ -126,7 +126,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DInvoke_VirtualAlloc", "CSh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DInvoke_EarlyBird", "CSharp\DInvoke\DInvoke_EarlyBird\DInvoke_EarlyBird.csproj", "{65DD3952-3835-42D3-A6DE-91D811E64F57}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VirtualAlloc2", "VirtualAlloc2\VirtualAlloc2.vcxproj", "{376B39B3-7879-4D64-BA41-08267AD4D1EA}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VirtualAlloc2", "C++\VirtualAlloc2\VirtualAlloc2.vcxproj", "{376B39B3-7879-4D64-BA41-08267AD4D1EA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

