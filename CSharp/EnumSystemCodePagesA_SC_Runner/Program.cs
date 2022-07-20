@@ -43,10 +43,10 @@ namespace EnumSystemCodePagesA_SC_Runner
                 return;
             }
 
-            Sleep(60000);
+            Sleep(1000);
             double tEnd = DateTime.Now.Subtract(tBegin).TotalSeconds;
 
-            if (tEnd < 55.5)
+            if (tEnd < 0.5)
             {
                 return;
             }

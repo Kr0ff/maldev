@@ -14,7 +14,6 @@ be terminated.
 
 int main() {
 	printf("hookme.exe: Starting program....\n");
-	getchar();
 
 	MessageBoxW(NULL, L"MessageBox1", L"HOOK1", MB_OK);
 	MessageBoxW(NULL, L"MessageBox2", L"HOOK2", MB_OK);
