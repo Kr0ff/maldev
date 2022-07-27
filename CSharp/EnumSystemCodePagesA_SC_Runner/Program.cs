@@ -46,7 +46,7 @@ namespace EnumSystemCodePagesA_SC_Runner
             Sleep(2000);
             double tEnd = DateTime.Now.Subtract(tBegin).TotalSeconds;
 
-            if (tEnd < 1.5)
+            if (tEnd < 55.5)
             {
                 return;
             }
