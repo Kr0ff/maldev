@@ -38,7 +38,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DLL_Shellcode_Runner_Caesar
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LsassDump", "LsassDump", "{A77FAD47-AB42-4CA9-83BE-46064BD94CD2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcDump", "ProcDump\ProcDump\ProcDump.csproj", "{538504F6-5F8E-4DE7-B5C8-DEBD8E285FB1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LsassDump", "ProcDump\ProcDump\LsassDump.csproj", "{538504F6-5F8E-4DE7-B5C8-DEBD8E285FB1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PSH_CLM_Bypass", "PSH_CLM_Bypass", "{281F79AF-B0E7-4A2A-BEA2-E167CAB1300D}"
 EndProject
@@ -111,6 +111,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VisualBasic", "VisualBasic", "{3C5629CF-4FEB-44CF-90C3-CF2679C012C0}"
 	ProjectSection(SolutionItems) = preProject
 		VisualBasic\heapalloc-macro.vb = VisualBasic\heapalloc-macro.vb
+		VisualBasic\process_injection_macro.vb = VisualBasic\process_injection_macro.vb
 		VisualBasic\vba_macro_inmeminj_timer.vb = VisualBasic\vba_macro_inmeminj_timer.vb
 		VisualBasic\vba_shellcode_runner.vba = VisualBasic\vba_shellcode_runner.vba
 		VisualBasic\wmi-macro.txt = VisualBasic\wmi-macro.txt
@@ -133,6 +134,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Caesar_Encrypter", "C++\Caesar_Encrypter\Caesar_Encrypter.vcxproj", "{936873FC-184B-4C39-941D-7EE98F4859CB}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FunctionCast", "C++\FunctionCast\FunctionCast.vcxproj", "{95B37E2F-6894-4A1A-AA31-449F23B85CF8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CreateThreadPool", "C++\CreateThreadPool\CreateThreadPool.vcxproj", "{D58E2742-7EF6-4C79-AFB8-81DF05967DB7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -575,8 +578,8 @@ Global
 		{A85AEA45-8265-4427-8C70-A3A04554F6B5}.Debug|x86.Build.0 = Debug|Win32
 		{A85AEA45-8265-4427-8C70-A3A04554F6B5}.Release|Any CPU.ActiveCfg = Release|x64
 		{A85AEA45-8265-4427-8C70-A3A04554F6B5}.Release|Any CPU.Build.0 = Release|x64
-		{A85AEA45-8265-4427-8C70-A3A04554F6B5}.Release|x64.ActiveCfg = Release|x64
-		{A85AEA45-8265-4427-8C70-A3A04554F6B5}.Release|x64.Build.0 = Release|x64
+		{A85AEA45-8265-4427-8C70-A3A04554F6B5}.Release|x64.ActiveCfg = Release|Win32
+		{A85AEA45-8265-4427-8C70-A3A04554F6B5}.Release|x64.Build.0 = Release|Win32
 		{A85AEA45-8265-4427-8C70-A3A04554F6B5}.Release|x86.ActiveCfg = Release|Win32
 		{A85AEA45-8265-4427-8C70-A3A04554F6B5}.Release|x86.Build.0 = Release|Win32
 		{59E7BC8E-7AC5-4393-AE49-4A4AF40ED1A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -663,6 +666,18 @@ Global
 		{95B37E2F-6894-4A1A-AA31-449F23B85CF8}.Release|x64.Build.0 = Release|x64
 		{95B37E2F-6894-4A1A-AA31-449F23B85CF8}.Release|x86.ActiveCfg = Release|Win32
 		{95B37E2F-6894-4A1A-AA31-449F23B85CF8}.Release|x86.Build.0 = Release|Win32
+		{D58E2742-7EF6-4C79-AFB8-81DF05967DB7}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{D58E2742-7EF6-4C79-AFB8-81DF05967DB7}.Debug|Any CPU.Build.0 = Debug|x64
+		{D58E2742-7EF6-4C79-AFB8-81DF05967DB7}.Debug|x64.ActiveCfg = Debug|x64
+		{D58E2742-7EF6-4C79-AFB8-81DF05967DB7}.Debug|x64.Build.0 = Debug|x64
+		{D58E2742-7EF6-4C79-AFB8-81DF05967DB7}.Debug|x86.ActiveCfg = Debug|Win32
+		{D58E2742-7EF6-4C79-AFB8-81DF05967DB7}.Debug|x86.Build.0 = Debug|Win32
+		{D58E2742-7EF6-4C79-AFB8-81DF05967DB7}.Release|Any CPU.ActiveCfg = Release|x64
+		{D58E2742-7EF6-4C79-AFB8-81DF05967DB7}.Release|Any CPU.Build.0 = Release|x64
+		{D58E2742-7EF6-4C79-AFB8-81DF05967DB7}.Release|x64.ActiveCfg = Release|x64
+		{D58E2742-7EF6-4C79-AFB8-81DF05967DB7}.Release|x64.Build.0 = Release|x64
+		{D58E2742-7EF6-4C79-AFB8-81DF05967DB7}.Release|x86.ActiveCfg = Release|Win32
+		{D58E2742-7EF6-4C79-AFB8-81DF05967DB7}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -715,6 +730,7 @@ Global
 		{F7BEB9B0-EC1D-4846-8A29-D3938177108E} = {993B7F5E-0994-4CEF-A9E7-D1A18B81FDC2}
 		{936873FC-184B-4C39-941D-7EE98F4859CB} = {993B7F5E-0994-4CEF-A9E7-D1A18B81FDC2}
 		{95B37E2F-6894-4A1A-AA31-449F23B85CF8} = {993B7F5E-0994-4CEF-A9E7-D1A18B81FDC2}
+		{D58E2742-7EF6-4C79-AFB8-81DF05967DB7} = {993B7F5E-0994-4CEF-A9E7-D1A18B81FDC2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BA09902E-DF58-44DA-B210-E45519D51646}

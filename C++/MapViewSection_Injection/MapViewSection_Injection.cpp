@@ -169,9 +169,6 @@ int main() {
     PVOID lViewSection = NULL;
     PVOID rViewSection = NULL;
 
-    //HMODULE libNT = LoadLibraryW(L"ntdll.dll");
-    //GetModuleHandle(L"NTDLL.DLL")
-
     // create memory section
     NtCreateSection_s pNtCreateSection = (NtCreateSection_s)GetProcAddress(GetModuleHandleW(L"NTDLL.DLL"), "NtCreateSection");
     if (pNtCreateSection == NULL) {

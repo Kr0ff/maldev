@@ -2,7 +2,6 @@
 using System.Runtime.InteropServices;
 
 // DInvoke import
-using Data = DInvoke.Data;
 using Invoke = DInvoke.DynamicInvoke;
 
 namespace DInvoke_VirtualAlloc
