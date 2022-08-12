@@ -108,8 +108,7 @@ BOOL _NtDllUnhook(const HMODULE hNtdll, const LPVOID pFileMapping) {
 
 			// Section .text was found great job
 			wprintf(L"[+] Unhooked NTDLL\n");
-			//wprintf(L"%p \n", (LPVOID)((DWORD_PTR)hNtdll + (DWORD_PTR)pSectionHeader->VirtualAddress));
-			return  TRUE; //(LPVOID)((DWORD_PTR)hNtdll + (DWORD_PTR)pSectionHeader->VirtualAddress);
+			return  TRUE;
 		}
 	}
 
