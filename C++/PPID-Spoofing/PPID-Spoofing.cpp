@@ -2,8 +2,6 @@
 #include <windows.h>
 #include <stdlib.h>
 #include <TlHelp32.h>
-#include <tchar.h>
-#include <psapi.h>
 
 #include "ntapi.h"
 #include "ntstatus.h"
