@@ -38,7 +38,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DLL_Shellcode_Runner_Caesar
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LsassDump", "LsassDump", "{A77FAD47-AB42-4CA9-83BE-46064BD94CD2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LsassDump", "ProcDump\ProcDump\LsassDump.csproj", "{538504F6-5F8E-4DE7-B5C8-DEBD8E285FB1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wintarmak", "ProcDump\ProcDump\wintarmak.csproj", "{538504F6-5F8E-4DE7-B5C8-DEBD8E285FB1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PSH_CLM_Bypass", "PSH_CLM_Bypass", "{281F79AF-B0E7-4A2A-BEA2-E167CAB1300D}"
 EndProject
